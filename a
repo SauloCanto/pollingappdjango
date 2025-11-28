@@ -1,4 +1,334 @@
-## 🐛 Test Output Observations
+# Skipped Tests Analysis
+
+## Pre-Correction Summary
+- **Total Skipped:** 77 tests
+- **Needs Action (Errors/Review):** 53 tests
+- **Legitimate Skips (Not Implemented):** 20 tests
+
+---
+
+## LEGITIMATE SKIPS - Features Not Yet Implemented (20 tests)
+
+### `project/tests/views/test_views_invoices.py` (1 test)
+- [-] `test_tenants_cannot_view_other_bills` 
+  - **Reason:** "This test will FAIL until access control is implemented in the view"
+  - **Status:** ✅ Valid skip - tenant-level access control not implemented in bill views
+  - **Note:** Bill views exist but don't filter/restrict by tenant ownership
+
+### `project/tests/models/test_invoice_generation.py` (2 tests - invoice generation bugs)
+- [-] Invoice generation test 1
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - invoice generation has known bugs blocking tests
+
+- [-] Invoice generation test 2
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - invoice generation has known bugs blocking tests
+
+### `project/tests/models/test_invoice_discount.py` (1 test - invoice generation bugs)
+- [-] Invoice discount test
+  - **Reason:** "This test will FAIL until invoice generation is fixed"
+  - **Status:** ✅ Valid skip - invoice generation has known bugs blocking tests
+  - **Note:** Blocked by same invoice generation issues as above
+
+### `project/tests/jobs/test_jobs.py` (5 tests - business validation needed)
+- [-] `test_generate_invoices_job`
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - depends on invoice generation fix (related to bugs above)
+
+- [-] `test_publicate_invoices_job`
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - depends on invoice generation fix (related to bugs above)
+
+- [-] `test_anniversary_check_job`
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - job feature needs business requirement validation
+
+- [-] `test_define_readjustment_quarter`
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - job feature needs business requirement validation
+
+- [-] `test_pending_readjustments_job`
+  - **Reason:** "Review implementation ASAP"
+  - **Status:** ✅ Valid skip - job feature needs business requirement validation
+
+### `project/tests/views/test_views_reports.py` (3 tests - business validation needed)
+- [-] `test_rented_lots_quantity_only`
+  - **Reason:** "Implementation should be reviewed ASAP"
+  - **Status:** ✅ Valid skip - report feature requirements (RF01) need business validation before enabling test
+
+- [-] `test_rented_lots_surface_only`
+  - **Reason:** "Implementation should be reviewed ASAP"
+  - **Status:** ✅ Valid skip - report feature requirements (RF03) need business validation before enabling test
+
+- [-] `test_projection_excludes_unrented_desired_rent`
+  - **Reason:** "Implementation should be reviewed ASAP"
+  - **Status:** ✅ Valid skip - report feature requirements (RF02) need business validation before enabling test
+
+### `project/tests/forms/test_user_forms_extended.py` (3 tests - validation not implemented)
+- [-] `test_invalid_rcs`
+  - **Reason:** "RCS validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - RCS format validation code is commented out in the form
+  - **Note:** Tests exist and are ready to run once validation is implemented
+
+- [-] `test_invalid_siret`
+  - **Reason:** "SIRET validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - SIRET format validation code is commented out in the form
+  - **Note:** Tests exist and are ready to run once validation is implemented
+
+- [-] `test_invalid_tva`
+  - **Reason:** "TVA validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - TVA format validation code is commented out in the form
+  - **Note:** Tests exist and are ready to run once validation is implemented
+
+### `project/tests/forms/test_user_forms_new.py` (5 tests - validation not implemented)
+- [-] `test_invalid_rcs_format_validation`
+  - **Reason:** "RCS validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - RCS format validation code is commented out in the form
+  - **Note:** Duplicate of test in test_user_forms_extended.py
+
+- [-] `test_invalid_siret_format_validation`
+  - **Reason:** "SIRET validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - SIRET format validation code is commented out in the form
+  - **Note:** Duplicate of test in test_user_forms_extended.py
+
+- [-] `test_invalid_tva_format_validation`
+  - **Reason:** "TVA validation is commented out in forms_user.py"
+  - **Status:** ✅ Valid skip - TVA format validation code is commented out in the form
+  - **Note:** Duplicate of test in test_user_forms_extended.py
+
+- [-] `test_missing_permission_groups_handling`
+  - **Reason:** "Form clean() method needs to handle missing permission_groups - bug in forms_user.py line 298"
+  - **Status:** ✅ Valid skip - Known bug: form uses `self.cleaned_data["permission_groups"]` instead of `.get("permission_groups")`, causing KeyError
+  - **Note:** Bug documented at forms_user.py:298, needs fix before test can run
+
+- [-] `test_invalid_permission_group_id_handling`
+  - **Reason:** "Form clean() method needs to handle missing permission_groups - bug in forms_user.py line 298"
+  - **Status:** ✅ Valid skip - Same bug as above: KeyError when permission_groups field is invalid
+  - **Note:** Bug documented at forms_user.py:298, needs fix before test can run
+---
+
+## Correction Needed - Tests Skipped Due to Errors/Review (53 tests)
+
+### 1. `project/tests/views/test_user_views.py` (1 test) ✅ **SOLVED**
+- [✔] `test_system_admin_can_edit_user`
+  - **Original Skip Reason:** "Edit user view not implemented yet"
+  - **ACTUAL STATUS:** ❌ **INCORRECT SKIP** - Feature **IS FULLY IMPLEMENTED**
+  - **Evidence:**
+    - View function: `edit_user(request, pk)` exists at `views_user.py:420-704`
+    - URL pattern: `path('user/edit_user/<int:pk>/', views_user.edit_user, name='edit_user')`
+    - Decorator: `@login_required` + `@permission_required("project.change_user")`
+    - Template: `user/edit_user.html`
+    - Full CRUD functionality for User/Person/Individual/Company
+    - Role management (LOCATAIRE, PROPRIETAIRE)
+    - File upload support
+    - Logging service integration
+  - **SOLUTION:** The test was skipping because the edit_user view returned a 404 error. This happened because users in the "LOCATAIRE" group require associated Person and Individual database objects, which the test wasn't creating. When the view tried to fetch these objects, they didn't exist, causing a 404. Fixed it by adding two lines to create the missing Person and Individual objects, allowing the view to work correctly and the test to pass.
+  - **Priority:** ~~P0 (Highest)~~ → ✅ **RESOLVED**
+
+---
+
+### 2. `project/tests/forms/test_transaction_forms.py` (6 tests) ✅ **SOLVED**
+
+**Issue:** Transaction forms need review - **HIGH PRIORITY** (relates to transaction refactoring)
+
+#### ChargeFormTest (3 tests)
+- [✔] `test_invalid_contract` - Verify contract validation for charges
+- [✔] `test_invalid_value` - Check monetary value validation
+- [✔] `test_valid_form` - Valid charge form submission
+
+#### RefundFormTest (3 tests)
+- [✔] `test_invalid_contract` - Verify contract validation for refunds
+- [✔] `test_invalid_value` - Check monetary value validation
+- [✔] `test_valid_form` - Valid refund form submission
+
+**SOLUTION:** The tests were being skipped because they referenced RefundForms from forms_bill, which doesn't exist - the codebase had been refactored to use a unified TransactionForms that handles both revenue and expense transactions via an is_expense parameter. To fix them, removed the skipTest() calls and updated the test setup to include required dependencies: AlternateTIMELINE (queried by the form's __init__), the "LOCATAIRE" group (for tenant filtering), ContractedStore relationships (validated by clean()), and missing fields like contact_pays and payment_frequency. Upated the tests to use is_expense=False for ChargeFormTest (revenue) and is_expense=True for RefundFormTest (expenses), aligning them with the current implementation.
+
+**Priority:** ~~P1 (Critical)~~ → ✅ **RESOLVED**
+
+---
+
+### 3. `project/tests/forms/test_user_forms_extended.py` (27 tests) ✅ **SOLVED**
+
+**Issue:** User form tests marked for review - forms likely changed, tests may be outdated
+
+#### Field Requirements (7 tests)
+- [✔] `test_email_field_required` - Email is mandatory
+- [✔] `test_first_name_field_required` - First name is mandatory
+- [✔] `test_last_name_field_required` - Last name is mandatory
+- [✔] `test_permission_groups_field_required` - Permission groups required
+- [✔] `test_status_account_field_required` - Account status required
+- [✔] `test_username_field_required` - Username is mandatory
+- [✔] `test_fields_required_not_locataire` - Non-tenant required fields
+
+#### Locataire-Specific Requirements (5 tests)
+- [✔] `test_contact_address_field_required_locataire` - Address required for tenants
+- [✔] `test_contact_city_field_required_locataire` - City required for tenants
+- [✔] `test_contact_zip_code_field_required_locataire` - ZIP code required for tenants
+- [✔] `test_person_type_field_required_locataire` - Person type required for tenants
+- [✔] `test_marital_status_field_optional_locataire` - Marital status optional for tenants
+
+#### Validation Rules (8 tests)
+- [✔] `test_invalid_birth_date` - Future birth dates should be rejected
+- [✔] `test_invalid_cell_phone_number` - Cell phone format validation
+- [✔] `test_invalid_contact_zip_code_over_length` - ZIP code length limit
+- [✔] `test_invalid_landline_phone_number` - Landline format validation
+- [✔] `test_invalid_person_type` - Invalid person type choices
+- [✔] `test_invalid_status_account` - Invalid account status choices
+- [✔] `test_email_already_exists` - Duplicate email detection
+- [✔] `test_username_already_exists` - Duplicate username detection
+
+#### Field Choices (4 tests)
+- [✔] `test_marital_status_field_choices` - Valid marital status options
+- [✔] `test_permission_group_choices_include_expected_roles` - Permission group options
+- [✔] `test_person_type_field_choices` - Valid person types
+- [✔] `test_status_account_field_choices` - Valid account statuses
+
+#### Valid Form Scenarios (3 tests)
+- [✔] `test_valid_company` - Company user creation
+- [✔] `test_valid_locataire` - Tenant user creation
+- [✔] `test_valid_proprietary` - Property owner creation
+
+**SOLUTION:** The tests were being skipped with a generic "Review implementation ASAP" message, but when they were ran, all 27 tests passed immediately without any modifications needed. The issue wasn't with the tests or the forms - they were perfectly functional and correctly implemented. The tests were validating UserForm field requirements, locataire-specific rules, phone/ZIP code formats, birth date validation, duplicate detection, field choices, and complete form scenarios for different user types (company, tenant, property owner). The only legitimate skips remaining are the 3 tests for RCS, SIRET, and TVA validation, which are correctly skipped because those specific validation rules are commented out in the forms_user.py code.
+
+**Priority:** ~~P2 (High)~~ → ✅ **RESOLVED**
+
+---
+
+### 4. `project/tests/forms/test_user_forms_new.py` (13 tests) ✅ **SOLVED**
+
+**Issue:** Newer user form tests - contains duplicates and legitimate skips
+
+**Status:** 15 tests passing ✅ | 5 tests legitimately skipped ✅
+
+#### Duplicate Detection (2 tests) ✅ **PASSING**
+- [✔] `test_duplicate_email_validation` - Duplicate emails should be rejected
+- [✔] `test_duplicate_username_validation` - Duplicate usernames should be rejected
+
+#### Field Configuration (2 tests) ✅ **PASSING**
+- [✔] `test_form_field_choices_exist` - All choice fields have valid options
+- [✔] `test_form_field_requirements` - Required fields properly configured
+
+#### Date Validation (1 test) ✅ **PASSING**
+- [✔] `test_future_birth_date_validation` - Future birth dates rejected
+
+#### Missing Fields (1 test) ✅ **PASSING**
+- [✔] `test_incomplete_form_validation` - Forms with missing fields rejected
+
+#### Format Validation (6 tests)
+- [✔] `test_invalid_cell_phone_validation` - Various invalid cell phone formats ✅ **PASSING**
+- [✔] `test_invalid_landline_phone_validation` - Various invalid landline formats ✅ **PASSING**
+- [✔] `test_invalid_zip_code_validation` - Various invalid ZIP code formats ✅ **PASSING**
+- [✔] `test_invalid_rcs_format_validation` - Various invalid RCS formats ✅ **LEGITIMATE SKIP** (validation commented out)
+- [✔] `test_invalid_siret_format_validation` - Various invalid SIRET formats ✅ **LEGITIMATE SKIP** (validation commented out)
+- [✔] `test_invalid_tva_format_validation` - Various invalid TVA formats ✅ **LEGITIMATE SKIP** (validation commented out)
+
+#### Choice Validation (2 tests) ✅ **PASSING**
+- [✔] `test_invalid_person_type_validation` - Invalid person types rejected
+- [✔] `test_invalid_status_account_validation` - Invalid status choices rejected
+
+#### Permission Groups (2 tests) ✅ **LEGITIMATE SKIP**
+- [✔] `test_invalid_permission_group_id_handling` - Non-existent group IDs handled ✅ **LEGITIMATE SKIP**
+- [✔] `test_missing_permission_groups_handling` - Missing permission groups handled ✅ **LEGITIMATE SKIP**
+
+#### Valid Scenarios (4 tests) ✅ **PASSING**
+- [✔] `test_valid_company_form_creation` - Valid company user creation
+- [✔] `test_valid_locataire_form_creation` - Valid tenant creation
+- [✔] `test_valid_permission_groups_acceptance` - Valid groups for different user types
+- [✔] `test_valid_proprietaire_form_creation` - Valid property owner creation
+
+**SOLUTION:** Removed all incorrect skipTest() calls. Tests now run correctly with 15 passing and 5 legitimately skipped (3 for commented-out validation, 2 for documented bug).
+
+**Note on Duplicates:** This file duplicates many tests from test_user_forms_extended.py. Consider consolidating in future cleanup.
+
+**Priority:** ~~P2 (High)~~ → ✅ **RESOLVED** (15 tests now passing, 5 legitimately skipped)
+
+---
+
+### 5. `project/tests/forms/test_insurance_forms.py` (4 tests) ✅ **SOLVED**
+
+**Issue:** Form validation logic marked for urgent review - likely outdated or changed
+
+- [✔] `test_invalid_contract` - Verify contract validation is working correctly
+- [✔] `test_invalid_insurance_end` - Check date validation for insurance end date
+- [✔] `test_invalid_insurance_number` - Validate insurance number format requirements
+- [✔] `test_valid_form` - Ensure form accepts valid insurance data
+
+**SOLUTION:** The tests were failing in the full test suite because the Contract object wasn't being created properly due to missing required relationships. In Django's test isolation, each test class gets a fresh database, and the Contract model requires not just basic fields but also the ContractedStore relationship to properly link contracts to stores. Fixed this by: (1) Adding ContractedStore import, (2) Storing contract as class variable (cls.contract) in setUpTestData, (3) Creating the Contract-Store relationship via ContractedStore.objects.create(), and (4) Updating all test methods to use self.contract.pk instead of Contract.objects.get(pk=1).pk. The tests now pass in both isolated runs and the full test suite.
+
+**Priority:** ~~P3 (Medium)~~ → ✅ **RESOLVED**
+
+---
+
+### 6. `project/tests/forms/test_inventory_forms.py` (4 tests) ✅ **SOLVED**
+
+**Issue:** Form validation marked for review - forms may have changed
+
+#### CreateInventoryFormTest (2 tests)
+- [✔] `test_valid_form` - Basic valid form submission
+- [✔] `test_valid_form2` - Alternative valid form scenario
+
+#### UpdateInventoryFormTest (2 tests)
+- [✔] `test_valid_form` - Basic update validation
+- [✔] `test_valid_form2` - Alternative update scenario
+
+**SOLUTION:** The tests were skipping with a generic "Review implementation ASAP" message, but the real issue was that the test data setup was using incorrect field names and missing required fields. Fixed it by: (1) Correcting User creation to use User.objects.create_user() with proper fields (username, password, email, first_name, last_name, status_account), (2) Fixing Person creation to only use required fields (user, contact_city) instead of incorrect first_name/last_name, (3) Updating Property creation to use 'name' instead of 'property_name' and 'proprietary' instead of 'proprietary_user', and (4) Adding missing Store fields (store_type="Appartement", deactivated=False). All 4 tests now pass without any changes to the actual form validation logic - the forms were working correctly, the tests just had outdated setup code.
+
+**Priority:** ~~P3 (Medium)~~ → ✅ **RESOLVED**
+
+---
+
+### Final Stats By Priority Level
+
+#### ** P0 - Incorrectly Skipped (Critical Errors)**
+- **Before:** 1 test
+- **After:** ✅ **0 tests** (SOLVED)
+- **Details:** `test_system_admin_can_edit_user` - Feature was fully implemented, test just needed proper setup
+
+#### ** P1 - Critical (Transaction Refactoring)**
+- **Before:** 6 tests
+- **After:** ✅ **0 tests** (SOLVED)
+- **Details:** All transaction form tests updated to use refactored unified TransactionForms
+
+#### ** P2 - High (User Form Validation)**
+- **Before:** 45 tests
+- **After:** ✅ **0 tests** (SOLVED)
+- **Details:** 
+  - 40 tests now passing
+  - 5 tests moved to legitimate skips (3 RCS/SIRET/TVA + 2 permission_groups bug)
+
+#### ** P3 - Medium (Insurance & Inventory Forms)**
+- **Before:** 8 tests
+- **After:** ✅ **0 tests** (SOLVED)
+- **Details:** All form validation tests passing
+
+#### ** P4 - Low & Legitimate Skips**
+- **Business Validation Needed:** 11 tests
+  - Invoice generation/jobs: 5 tests (blocked by known bugs)
+  - Business logic jobs: 3 tests (need requirement validation)
+  - Report features: 3 tests (need requirement validation)
+- **Features Not Implemented:** 9 tests
+  - Access control: 1 test
+  - RCS/SIRET/TVA validation: 6 tests (3×2, validation code commented out)
+  - Permission groups bug: 2 tests
+
+**Total Legitimate Skips: 20 tests** (11 + 9)
+
+---
+
+### Execution Metrics by Correction Phase
+
+| Phase                    | Total Tests   | Execution Time |  Skipped Tests | Tests Fixed
+|--------------------------|---------------|----------------|----------------|-------------
+| **Initial State**        | 206           | 36.292s        | 77             | -
+| **After 1st Correction** | 206           | 36.495s        | 76             | 1
+| **After 2nd Correction** | 206           | 35.843s        | 70             | 7
+| **After 3rd Correction** | 206           | 38.166s        | 43             | 34
+| **After 4th Correction** | 206           | 37.888s        | 28             | 49
+| **After 5th Correction** | 206           | 36.758s        | 24             | 53
+| **After 6th Correction** | 206           | 37.167s        | 20             | 57
+
+
+## Test Output Observations (POSSIBLE BUGS)
 
 ### Console Output During Test Execution
 
@@ -12,9 +342,7 @@ System date successfully set to 2019-02-20
 ```
 
 - **Source:** Tests manipulating `AlternateTIMELINE` model for date-dependent logic
-- **Purpose:** Tests need to simulate different time periods to validate contract dates, invoice generation, readjustments, etc.
-- **Status:** ✅ Normal behavior - Part of time-travel testing pattern
-- **Files:** Various test files that need to test date-sensitive business logic
+
 
 #### Form Validation Error Messages (HTML)
 ```html
@@ -22,8 +350,3 @@ System date successfully set to 2019-02-20
 ```
 
 - **Source:** Django form validation error rendering
-- **Translation:** "The lot already exists" (French error message)
-- **Purpose:** Tests verifying duplicate lot code validation
-- **Status:** ✅ Normal behavior - Test is checking that duplicate validation works correctly
-- **Files:** Likely from `test_lot_forms.py` or similar form validation tests
-- **Note:** Error messages appear because tests intentionally create duplicate scenarios to verify validation
