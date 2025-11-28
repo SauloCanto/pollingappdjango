@@ -1,0 +1,29 @@
+## 🐛 Test Output Observations
+
+### Console Output During Test Execution
+
+During the test suite execution, some informational and debug messages appear in the console output. These are **expected behaviors** from the test suite:
+
+#### System Date Manipulation Messages
+```
+System date successfully set to 2024-02-10
+System date successfully set to 2024-01-10
+System date successfully set to 2019-02-20
+```
+
+- **Source:** Tests manipulating `AlternateTIMELINE` model for date-dependent logic
+- **Purpose:** Tests need to simulate different time periods to validate contract dates, invoice generation, readjustments, etc.
+- **Status:** ✅ Normal behavior - Part of time-travel testing pattern
+- **Files:** Various test files that need to test date-sensitive business logic
+
+#### Form Validation Error Messages (HTML)
+```html
+<ul class="errorlist"><li>lot_code<ul class="errorlist"><li>Le lot existe déjà</li></ul></li></ul>
+```
+
+- **Source:** Django form validation error rendering
+- **Translation:** "The lot already exists" (French error message)
+- **Purpose:** Tests verifying duplicate lot code validation
+- **Status:** ✅ Normal behavior - Test is checking that duplicate validation works correctly
+- **Files:** Likely from `test_lot_forms.py` or similar form validation tests
+- **Note:** Error messages appear because tests intentionally create duplicate scenarios to verify validation
